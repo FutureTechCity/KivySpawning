@@ -1,0 +1,28 @@
+#:kivy 1.9.0
+
+<SpawningScreen>:
+    angle: 0
+    shot: turret_shot
+
+    Shot:
+        id: turret_shot
+        source: 'atlas://turret/shot'
+        size: 32, 32
+        center: root.width / 2, 0
+
+    Image:
+        source: 'atlas://turret/barrel'
+        size: 32, 32
+        center: root.width / 2, 13
+        canvas.before:
+            PushMatrix
+            Rotate:
+                angle: root.angle
+                origin: root.width / 2, 0
+        canvas.after:
+            PopMatrix
+
+    Image:
+        source: 'atlas://turret/turret'
+        size: 32, 32
+        center: root.width / 2, 16
