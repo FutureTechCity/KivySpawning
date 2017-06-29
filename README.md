@@ -2,7 +2,7 @@
 
 This Kivy project demonstrates how to spawn objects such as bullets.
 
-## How it words
+## How it works
 
 Kivy draws three elements: the shot, the barrel, and the turret, in that order. The shot is initially inside the centre of the turret. When the player touches the screen, the program calculates a vector from the turret to the touch point and sets a velocity on the shot matching that vector. (The code must also check that the shot is not already in the air or subsequent touches would change its direction.)
 
