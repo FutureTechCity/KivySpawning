@@ -7,13 +7,14 @@
     Shot:
         id: turret_shot
         source: 'atlas://turret/shot'
-        size: 32, 32
-        center: root.width / 2, 0
+        allow_stretch: True
+        size: 8, 8
 
     Image:
         source: 'atlas://turret/barrel'
-        size: 32, 32
-        center: root.width / 2, 13
+        allow_stretch: True
+        size: 64, 64
+        center: root.width / 2, 30
         canvas.before:
             PushMatrix
             Rotate:
@@ -24,5 +25,6 @@
 
     Image:
         source: 'atlas://turret/turret'
-        size: 32, 32
-        center: root.width / 2, 16
+        allow_stretch: True
+        size: 64, 64
+        center: root.width / 2, 32
