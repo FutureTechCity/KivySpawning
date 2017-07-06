@@ -126,3 +126,87 @@ You should now be able to run your program by entering `python main.py` from the
 * Rotate your projectile (you'll need a bigger sprite to see this effect)
 * Allow more than one bullet in the air at a time
 * Add code to guide the projectile towards your touch
+
+## Appendix A: More than one bullet
+
+Here's one way to add multiple simultaneous bullets. The trick is to create an array of duplicate bullet images as a pool and pick a free one to fire with each click. In this code a bullet is considered free if it has zero velocity. All of the bullets are updated on every frame.
+
+The `SpawningScreen` object contains the list which is declared as an empty list `shots = []` which is filled in by the `start` function. Because the `start` function needs to be called after the loading of the `kv` file, it is called using the scheduler with the call `Clock.schedule_once().`
+
+In the `start` function, a clone of template `shot` widget is created for each simultaneous shot. The `clone` function added to the `Shot` class creates a new Shot object and copies the properties one by one from the original. If additional properties are required they would need to be copied as well.
+
+In the `on_touch_down` function we have to find a free shot. We do this by calculating the length of the velocity vector of each shot until we find one with velocity zero. (If there aren't any with velocity zero then they must all be in play and this function will ignore the touch.) When a shot is found and a direction can be determined, the `shoot` function is called on the shot to set its velocity.
+
+In the `update` fucntion we now need to update every bullet. If a bullet is not in play, it will still get an update, but it will remain hidden behind the turret.
+
+Here is the modified code:
+~~~
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.uix.image import Image
+from kivy.properties import NumericProperty, ObjectProperty
+from kivy.clock import Clock
+from kivy.vector import Vector
+
+class Shot(Image):
+    velocity = Vector(0, 0)
+    shot_speed = 600
+    def clone(self):
+        clone = Shot()
+        clone.id = self.id
+        clone.source = self.source
+        clone.allow_stretch = self.allow_stretch
+        clone.size = self.size
+        clone.center = self.center
+        return clone
+    
+    def update(self, dt):
+        position = Vector(self.center) + self.velocity * dt
+        if (position.x < 0 or position.x > self.parent.width or position.y < 0 or position.y > self.parent.height):
+            self.velocity = Vector(0, 0)
+            position = Vector(self.parent.width / 2, 0)
+        self.center = position
+        
+    def shoot(self, direction):
+        self.velocity = direction * self.shot_speed
+
+class SpawningScreen(Widget):
+    shot = ObjectProperty(None)
+    shots = []
+    total_shots = 3
+    angle = NumericProperty(0)
+    target = Vector(0, 0)
+    def start(self, time):
+        self.shot.center = Vector(self.width / 2, 0)
+        for index in range(0, self.total_shots):
+            shot = self.shot.clone()
+            self.shots.append(shot)
+            self.add_widget(shot, len(self.children))
+    
+    def update(self, dt):
+        angle = (self.target - Vector(self.width / 2, 0)).angle((0, 100))
+        self.angle = angle
+        for shot in self.shots:
+            shot.update(dt)
+        
+    def on_touch_down(self, touch):
+        for shot in self.shots:
+            velocity = shot.velocity
+            if (velocity.length2() == 0):
+                self.target = Vector(touch.x, touch.y)
+                v = self.target - Vector(self.width / 2, 0)
+                if (v.length2() > 0):
+                    direction = v.normalize()
+                    shot.shoot(direction)
+                break
+
+class SpawningApp(App):
+    def build(self):
+        spawning = SpawningScreen()
+        Clock.schedule_once(spawning.start, 0)
+        Clock.schedule_interval(spawning.update, 1.0/60.0)
+        return spawning
+
+if __name__ == '__main__':
+    SpawningApp().run()
+~~~
